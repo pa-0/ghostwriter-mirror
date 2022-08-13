@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "initializer_list": "cpp",
+        "type_traits": "cpp",
+        "vector": "cpp",
+        "xstring": "cpp",
+        "xutility": "cpp"
+    },
+    "C_Cpp.default.cppStandard": "c++17",
+    "C_Cpp.default.cStandard": "c17",
+    "C_Cpp.default.includePath": [
+        "C:\\Qt\\6.3.1\\msvc2019_64\\include"
+    ],
+    "C_Cpp.default.windowsSdkVersion": "10.0.22000.0",
+    "C_Cpp.default.compileCommands": "",
+    "cmake.copyCompileCommands": "nmake"
+}
