@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 * Updated file licenses to be compliant with REUSE.
-* Transitioned to KDE Frameworks' Sonnet spell checking library.
+* Transitioned to KDE Frameworks' Sonnet spell checking library, which provides language detection as a new feature.
 
 ## [2.2.0] - 2022-09-17
 
