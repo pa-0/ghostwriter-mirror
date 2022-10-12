@@ -125,6 +125,11 @@ if (QT_MAJOR_VERSION STREQUAL "6")
     )
 endif()
 
+if (MSVC)
+    set_property(TARGET ghostwriter PROPERTY
+        MSVC_RUNTIME_LIBRARY MultiThreaded)
+endif()
+
 set_target_properties(ghostwriter PROPERTIES
     WIN32_EXECUTABLE ON
     MACOSX_BUNDLE ON
