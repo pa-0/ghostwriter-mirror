@@ -111,7 +111,7 @@ if (CMARK_SHARED)
 
   # Avoid name clash between PROGRAM and LIBRARY pdb files.
   set_target_properties(${LIBRARY} PROPERTIES PDB_NAME cmark-gfm_dll)
-
+  
   generate_export_header(${LIBRARY}
     BASE_NAME ${PROJECT_NAME})
 
@@ -127,7 +127,8 @@ if (CMARK_STATIC)
   if (MSVC)
     set_target_properties(${STATICLIBRARY} PROPERTIES
       OUTPUT_NAME "cmark-gfm_static"
-      VERSION ${PROJECT_VERSION})
+      VERSION ${PROJECT_VERSION}
+      MSVC_RUNTIME_LIBRARY MultiThreaded)
   else()
     set_target_properties(${STATICLIBRARY} PROPERTIES
       OUTPUT_NAME "cmark-gfm"
@@ -203,11 +204,6 @@ if(MSVC)
     string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
   else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /W4")
-  endif()
-  if(CMAKE_CXX_FLAGS MATCHES "/MD")
-    string(REGEX REPLACE "/MD" "/MT" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
-  else()
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MT")
   endif()
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /WX /wd4706 /wd4204 /wd4221 /wd4100 /D_CRT_SECURE_NO_WARNINGS")
 elseif(CMAKE_COMPILER_IS_GNUCC OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
