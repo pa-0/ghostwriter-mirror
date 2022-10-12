@@ -11,6 +11,7 @@ target_include_directories(ghostwriter PUBLIC
     "${PROJECT_SOURCE_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${CMAKE_CURRENT_BINARY_DIR}/../3rdparty/cmark-gfm/src"
+    "${CMAKE_CURRENT_BINARY_DIR}/../3rdparty/cmark-gfm/extensions"
     "${PROJECT_SOURCE_DIR}/3rdparty/QtAwesome"
 )
 
