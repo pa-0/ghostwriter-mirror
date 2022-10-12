@@ -129,5 +129,6 @@ endif()
 set_target_properties(ghostwriter PROPERTIES
     WIN32_EXECUTABLE ON
     MACOSX_BUNDLE ON
+    COMPILE_DEFINITIONS BUILDER_STATIC_DEFINE
 )
 
