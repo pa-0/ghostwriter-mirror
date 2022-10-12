@@ -11,7 +11,6 @@ target_include_directories(ghostwriter PUBLIC
     "${PROJECT_SOURCE_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${CMAKE_CURRENT_BINARY_DIR}/../3rdparty/cmark-gfm/src"
-    "${CMAKE_CURRENT_BINARY_DIR}/../3rdparty/cmark-gfm/extensions"
     "${PROJECT_SOURCE_DIR}/3rdparty/QtAwesome"
 )
 
@@ -102,6 +101,19 @@ find_package(
     ConfigWidgets
 )
 
+if (MSVC)
+    set(CMARK_LIBS
+        libcmark-gfm
+        libcmark-gfm-extensions
+    )
+else()
+    set(CMARK_LIBS
+        libcmark-gfm_static
+        libcmark-gfm-extensions_static
+    )
+endif()
+
+
 target_link_libraries(ghostwriter PRIVATE
     Qt::Core
     Qt::Concurrent
@@ -116,8 +128,7 @@ target_link_libraries(ghostwriter PRIVATE
     KF5::XmlGui
     KF5::ConfigWidgets
     QtAwesome
-    libcmark-gfm_static
-    libcmark-gfm-extensions_static
+    ${CMARK_LIBS}
 )
 
 if (QT_MAJOR_VERSION STREQUAL "6")
@@ -129,6 +140,5 @@ endif()
 set_target_properties(ghostwriter PROPERTIES
     WIN32_EXECUTABLE ON
     MACOSX_BUNDLE ON
-    COMPILE_DEFINITIONS BUILDER_STATIC_DEFINE
 )
 
