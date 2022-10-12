@@ -31,7 +31,6 @@ list(APPEND CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
 
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
 include(KDEInstallDirs)
-include(KDECompilerSettings NO_POLICY_SCOPE)
 remove_definitions(-DQT_NO_KEYWORDS)
 remove_definitions(-DQT_NO_CAST_TO_ASCII)
 remove_definitions(-DQT_NO_CAST_FROM_ASCII)

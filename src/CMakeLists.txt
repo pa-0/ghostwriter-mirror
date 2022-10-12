@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+include(KDECompilerSettings NO_POLICY_SCOPE)
 add_executable(ghostwriter ../resources.qrc)
 
 target_compile_definitions(ghostwriter PRIVATE APPVERSION="${INTERNAL_RELEASE_VERSION}")
