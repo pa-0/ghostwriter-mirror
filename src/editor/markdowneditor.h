@@ -7,13 +7,17 @@
 #ifndef MARKDOWN_EDITOR_H
 #define MARKDOWN_EDITOR_H
 
-#include <QSyntaxHighlighter>
 #include <QPlainTextEdit>
 #include <QScopedPointer>
+#include <QSyntaxHighlighter>
 
 #include "colorscheme.h"
 #include "markdowndocument.h"
 #include "markdowneditortypes.h"
+
+#ifdef BUILD_TEST
+#include "../autotest/markdowneditor/tst_markdownedit.h"
+#endif
 
 namespace ghostwriter
 {
@@ -25,8 +29,10 @@ class MarkdownEditor : public QPlainTextEdit
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(MarkdownEditor)
-
 public:
+#ifdef BUILD_TEST
+    friend class ::MarkDownEditTest;
+#endif
     /**
      * Constructor.
      */
@@ -137,7 +143,7 @@ public:
      * painting (since QPlainTextEdit's cursor width is set to zero to hide it.)
      */
     QRect cursorRect(const QTextCursor &cursor) const;
-    QRect cursorRect() const;
+    QList<QRect> cursorRects() const;
     int cursorWidth() const;
 
 protected:

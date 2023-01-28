@@ -67,6 +67,7 @@ add_subdirectory(3rdparty/QtAwesome)
 set(CMARK_TESTS OFF)
 add_subdirectory(3rdparty/cmark-gfm EXCLUDE_FROM_ALL)
 add_subdirectory(src)
+add_subdirectory(autotest)
 
 if(KF${QT_MAJOR_VERSION}DocTools_FOUND)
     kdoctools_install(po)
