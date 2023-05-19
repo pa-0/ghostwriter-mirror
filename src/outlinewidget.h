@@ -19,7 +19,7 @@ namespace ghostwriter
  * current position in the document to the user.
  */
 class OutlineWidgetPrivate;
-class OutlineWidget : public QListWidget
+class OutlineWidget : public QWidget
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(OutlineWidget)
@@ -27,6 +27,8 @@ class OutlineWidget : public QListWidget
 public:
     OutlineWidget(MarkdownEditor *editor, QWidget *parent = nullptr);
     virtual ~OutlineWidget();
+
+
 
 signals:
     /**
@@ -39,6 +41,7 @@ signals:
      * in the document was selected, and so on.
      */
     void headingNumberNavigated(int headingSequenceNumber);
+    void headerLevelChanged(int lvl);
 
 public slots:
     /**
@@ -47,6 +50,7 @@ public slots:
      * knows in which section of the document the text cursor is located.
      */
     void updateCurrentNavigationHeading(int position);
+    void setHeaderLevel(int l);
 
 private:
     QScopedPointer<OutlineWidgetPrivate> d_ptr;

@@ -242,7 +242,7 @@ ghostwriter--Sidebar QPushButton:pressed {
 
 /* Stacked widgets inside sidebar pane */
 
-ghostwriter--Sidebar QListWidget {
+ghostwriter--Sidebar QTreeView {
     outline: none;
     border: 0;
     padding: 1;
@@ -252,7 +252,7 @@ ghostwriter--Sidebar QListWidget {
     font-weight: normal
 }
 
-ghostwriter--Sidebar QListWidget::item {
+ghostwriter--Sidebar QTreeView::item {
     border: 0;
     padding: 1 0 1 0;
     margin: 0;
@@ -261,7 +261,7 @@ ghostwriter--Sidebar QListWidget::item {
     font-weight: normal
 }
 
-ghostwriter--Sidebar QListWidget::item:selected {
+ghostwriter--Sidebar QTreeView::item:selected {
     border-radius: 0px;
     color: $selected-text-fg-color;
     background-color: $selected-text-bg-color;
@@ -274,6 +274,38 @@ ghostwriter--Sidebar QLabel {
     background-color: transparent;
     font-size: 11pt;
     color: $label-color;
+}
+
+ghostwriter--Sidebar QLineEdit {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background-color: $secondary-background-color;
+
+    font-size: 11pt;
+    color: $label-color;
+}
+
+/*ghostwriter--Sidebar QSlider::groove {
+    background-color: $secondary-separator-color;
+    color: $label-color;
+}*/
+
+ghostwriter--Sidebar QSlider::add-page:horizontal {
+    background: $secondary-background-color;
+}
+
+ghostwriter--Sidebar QSlider::sub-page:horizontal {
+    background: $secondary-separator-color;
+}
+
+ghostwriter--Sidebar QSlider::handle {
+    /* background-color: $secondary-background-color;
+     color: $label-color; */
+    border: 1px solid #5c5c5c;
+    width: 18px;
+    margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+    border-radius: 3px;
 }
 
 /******************************************************************************/
