@@ -27,20 +27,20 @@ endif()
 add_executable(markdownEditTest
     tst_markdownedit.cpp
     tst_markdownedit.h
-    ../../src/markdowneditor.h
-    ../../src/markdowneditor.cpp
-    ../../src/markdowndocument.h
-    ../../src/markdowndocument.cpp
-    ../../src/markdownhighlighter.h
-    ../../src/markdownhighlighter.cpp
-    ../../src/markdownnode.h
-    ../../src/markdownnode.cpp
-    ../../src/colorscheme.h
+    ../../src/editor/markdowneditor.h
+    ../../src/editor/markdowneditor.cpp
+    ../../src/editor/markdowndocument.h
+    ../../src/editor/markdowndocument.cpp
+    ../../src/editor/markdownhighlighter.h
+    ../../src/editor/markdownhighlighter.cpp
+    ../../src/markdown/markdownnode.h
+    ../../src/markdown/markdownnode.cpp
+    ../../src/editor/colorscheme.h
     ../../src/markdowneditor_p.h
-    ../../src/cmarkgfmapi.h
-    ../../src/cmarkgfmapi.cpp
-    ../../src/markdownast.h
-    ../../src/markdownast.cpp
+    ../../src/markdown/cmarkgfmapi.h
+    ../../src/markdown/cmarkgfmapi.cpp
+    ../../src/markdown/markdownast.h
+    ../../src/markdown/markdownast.cpp
 )
 
 target_compile_definitions(markdownEditTest PUBLIC BUILD_TEST=1)
