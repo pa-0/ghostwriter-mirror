@@ -1435,7 +1435,24 @@ void MarkdownEditor::wheelEvent(QWheelEvent *e)
         setFont(this->font().family(), fontSize);
         emit fontSizeChanged(fontSize);
     } else {
+        Q_D(MarkdownEditor);
+        auto rs = d->cursorRects;
+
+        QList<QTextCursor> cursors;
+        cursors.reserve(rs.count());
+        std::transform(std::begin(rs), std::end(rs), std::back_inserter(cursors), [this](const QRect& r){
+            return cursorForPosition(r.topLeft());
+        });
+
         QPlainTextEdit::wheelEvent(e);
+
+        QList<QRect> rects;
+        rects.reserve(cursors.count());
+        std::transform(std::begin(cursors), std::end(cursors), std::back_inserter(rects), [this](const QTextCursor& cursor){
+            return cursorRect(cursor);
+        });
+
+        d->cursorRects  = rects;
     }
 }
 
