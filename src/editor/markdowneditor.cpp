@@ -39,6 +39,7 @@
 #include <QTextBoundaryFinder>
 #include <QTextCursor>
 #include <QTimer>
+#include <QScrollBar>
 #include <QUrl>
 
 #include "../markdown/cmarkgfmapi.h"
@@ -49,143 +50,14 @@
 #include "markdownhighlighter.h"
 #include "markdownstates.h"
 
-
-/*
+namespace ghostwriter
+{
 namespace
 {
 constexpr auto unbreakableSpace{" "}; // Entity: &nbsp; HTML code: &#160; Unicode: U+00AO
 constexpr auto doubleSpace{"  "};
 constexpr auto unbreakableSpaceIndicator{"_"};
 }
-class MarkdownEditorPrivate
-{
-    Q_DECLARE_PUBLIC(MarkdownEditor)
-
-public:
-    MarkdownEditorPrivate(MarkdownEditor *q_ptr)
-        : q_ptr(q_ptr)
-    {
-        ;
-    }
-
-    ~MarkdownEditorPrivate()
-    {
-        ;
-    }
-
-    typedef enum {
-        BlockTypeNone,
-        BlockTypeQuote,
-        BlockTypeCode
-    } BlockType;
-
-    static const int CursorWidth = 2;
-    const QString lineBreakChar = QString::fromUtf8("↵");
-
-    // We use only image MIME types that are web-friendly so that any inserted
-    // or pasted images can be displayed in the live preview.
-    static const QStringList webMimeTypes;
-
-    static QStringList imageReadFormats;
-    static QStringList imageWriteFormats;
-    static QString imageOpenFilter;
-    static QString imageSaveFilter;
-
-    MarkdownEditor *q_ptr;
-
-    MarkdownDocument *textDocument;
-    MarkdownHighlighter *highlighter;
-    QGridLayout *preferredLayout;
-    bool autoMatchEnabled;
-    bool bulletPointCyclingEnabled;
-    bool hemingwayModeEnabled;
-    bool showUnbreakableSpaces;
-    FocusMode focusMode;
-    QBrush fadeColor;
-    QColor blockColor;
-    QColor whitespaceRenderColor;
-    QColor unbreakableSpaceRenderColor;
-    bool insertSpacesForTabs;
-    int tabWidth;
-    EditorWidth editorWidth;
-    InterfaceStyle editorCorners;
-    QRegularExpression emptyBlockquoteRegex;
-    QRegularExpression emptyNumberedListRegex;
-    QRegularExpression emptyBulletListRegex;
-    QRegularExpression emptyTaskListRegex;
-    QRegularExpression blockquoteRegex;
-    QRegularExpression numberedListRegex;
-    QRegularExpression bulletListRegex;
-    QRegularExpression taskListRegex;
-
-    // Used for auto-insert and pairing.
-    QHash<QChar, QChar> markupPairs;
-
-    // Used for filtering paired characters.
-    QHash<QChar, bool> autoMatchFilter;
-
-    // Used for determining if whitespace is allowed between paired
-    // characters when autopairing.
-    QHash<QChar, QChar> nonEmptyMarkupPairs;
-
-    bool mouseButtonDown;
-    QColor cursorColor;
-    bool textCursorVisible;
-    QTimer *cursorBlinkTimer;
-
-    // Timers used to determine when typing has paused.
-    QTimer *typingTimer;
-    QTimer *scaledTypingTimer;
-
-    bool typingHasPaused;
-    bool scaledTypingHasPaused;
-
-    // Use these flags to keep from sending the typingPaused() and
-    // typingPausedScaled() signals: multiple times after they have
-    // already been sent the first time after a pause in the user's
-    // typing.
-    //
-    bool typingPausedSignalSent;
-    bool typingPausedScaledSignalSent;
-
-    // Flag to track when a document change is due to a setPlainText() call
-    // versus the user editing the document.
-    bool loadingDocument;
-
-    void toggleCursorBlink();
-    void parseDocument();
-    void parseText(const QString &text);
-
-    void handleCarriageReturn();
-    bool handleBackspaceKey();
-    void insertPrefixForBlocks(const QString &prefix);
-    void createNumberedList(const QChar marker);
-    bool insertPairedCharacters(const QChar firstChar);
-    bool handleEndPairCharacterTyped(const QChar ch);
-    bool handleWhitespaceInEmptyMatch(const QChar whitespace);
-    QString priorIndentation();
-    QString priorMarkdownBlockItemStart(
-        const QRegularExpression &itemRegex,
-        QRegularExpressionMatch &match
-    );
-
-    bool insideBlockArea(const QTextBlock &block, BlockType &type) const;
-    bool atBlockAreaStart(const QTextBlock &block, BlockType &type) const;
-    bool atBlockAreaEnd(const QTextBlock &block, const BlockType type) const;
-    bool atCodeBlockStart(const QTextBlock &block) const;
-    bool atCodeBlockEnd(const QTextBlock &block) const;
-    bool isBlockquote(const QTextBlock &block) const;
-    bool isCodeBlock(const QTextBlock &block) const;
-    
-    static QStringList buildImageReaderFormats();
-    static QStringList buildImageWriterFormats();
-    static QString buildImageFilters(
-        const QStringList &mimeTypes,
-        bool includeWildcardImages = false);
-};
-*/
-namespace ghostwriter
-{
 // Need to be in order of decreasing length
 static const QString MarkupStrings[MarkupType_Count] = {
     QStringLiteral("***"),
