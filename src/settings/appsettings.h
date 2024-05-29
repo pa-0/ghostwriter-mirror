@@ -150,9 +150,14 @@ public:
     Q_SLOT void setCurrentHtmlExporter(Exporter *exporter);
     Q_SIGNAL void currentHtmlExporterChanged(Exporter *exporter);
 
+
     bool showUnbreakableSpaceEnabled();
     Q_SLOT void setShowUnbreakableSpaceEnabled(bool enabled);
     Q_SIGNAL void showUnbreakableSpaceEnabledChanged(bool enabled);
+
+    int headerLevel() const;
+    Q_SLOT void setHeaderLevel(int l);
+    Q_SIGNAL void headerLevelChanged(int l);
 
 private:
     QScopedPointer<AppSettingsPrivate> d_ptr;

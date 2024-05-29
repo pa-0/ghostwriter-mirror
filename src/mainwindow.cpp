@@ -1295,7 +1295,10 @@ void MainWindow::buildSidebar()
     sessionStatsWidget->setAlternatingRowColors(false);
 
     outlineWidget = new OutlineWidget(editor, this);
-    outlineWidget->setAlternatingRowColors(false);
+
+    connect(appSettings, &AppSettings::headerLevelChanged, outlineWidget,&OutlineWidget::setHeaderLevel);
+    connect(outlineWidget,&OutlineWidget::headerLevelChanged, appSettings, &AppSettings::setHeaderLevel);
+    outlineWidget->setHeaderLevel(appSettings->headerLevel());
 
     documentStats = new DocumentStatistics((MarkdownDocument *) editor->document(), this);
     connect(documentStats, &DocumentStatistics::wordCountChanged,

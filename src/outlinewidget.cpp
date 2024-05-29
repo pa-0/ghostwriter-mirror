@@ -9,11 +9,42 @@
 #include <QTextBlock>
 #include <QVariant>
 #include <QPointer>
+#include <QTreeView>
+#include <QLineEdit>
+#include <QVBoxLayout>
+#include <QFormLayout>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QSlider>
+#include <QDebug>
+#include <QAbstractItemModelTester>
 
 #include "outlinewidget.h"
+#include "outlinemodel.h"
+#include "outlineproxymodel.h"
 
 namespace ghostwriter
 {
+
+bool containsHeader(const QTextBlock& block)
+{
+    auto text = block.text();
+    auto next = block.next();
+    auto text2 = next.text();
+    auto list = text.split('\n');// warning about windows \r\n ?
+    auto list2 = text2.split('\n');
+    list << list2;
+
+    bool isHeader= std::any_of(std::begin(list), std::end(list), [](const QString& line){
+        return line.startsWith("#");// use regexp for better matching
+    });
+
+    isHeader |= std::any_of(std::begin(list), std::end(list), [](const QString& line){
+        return line.startsWith("=") || line.startsWith("-");// use regexp for better matching
+    });
+
+    return isHeader;
+}
 
 class OutlineWidgetPrivate
 {
@@ -24,6 +55,22 @@ public:
         : q_ptr(q_ptr)
     {
         this->editor = editor;
+        this->treeview = new QTreeView(q_ptr);
+        this->treeview->setAlternatingRowColors(false);
+        this->treeview->setHeaderHidden(true);
+        this->model = new OutlineModel(q_ptr);
+        this->searchPattern = new QLineEdit(q_ptr);
+        this->headerLevel = new QSlider(Qt::Horizontal, q_ptr);
+        this->headerLevel->setMinimum(1);
+        this->headerLevel->setMaximum(6);
+        this->headerLevel->setValue(6);
+
+        this->proxy = new OutlineProxyModel(q_ptr);
+        this->proxy->setSourceModel(this->model);
+
+        this->treeview->setModel(this->proxy);
+
+        //new QAbstractItemModelTester(this->model, QAbstractItemModelTester::FailureReportingMode::Fatal, q_ptr);
     }
 
     ~OutlineWidgetPrivate()
@@ -31,23 +78,26 @@ public:
         ;
     }
 
-    static const int DOCUMENT_POSITION_ROLE;
-
     OutlineWidget *q_ptr;
     QPointer<MarkdownEditor> editor;
+    QTreeView* treeview;
+    QLineEdit* searchPattern;
+    QSlider* headerLevel;
+    OutlineModel* model;
+    OutlineProxyModel* proxy;
 
     /*
     * Invoked when the user selects one of the headings in the outline
     * in order to navigate to a different position in the document.
     */
-    void onOutlineHeadingSelected(QListWidgetItem *item);
+    void onOutlineHeadingSelected(const QModelIndex &idx);
 
     void reloadOutline();
 
     /*
     * Gets the document position stored in the given item.
     */
-    int documentPosition(QListWidgetItem *item);
+    int documentPosition(const QModelIndex& item);
 
     /*
     * Binary search of the outline tree.  Returns row of the matching
@@ -61,28 +111,35 @@ public:
     int findHeading(int position, bool exactMatch = true);
 };
 
-const int OutlineWidgetPrivate::DOCUMENT_POSITION_ROLE = Qt::UserRole + 1;
-
 OutlineWidget::OutlineWidget(MarkdownEditor *editor, QWidget *parent)
-    : QListWidget(parent),
+    : QWidget(parent),
       d_ptr(new OutlineWidgetPrivate(this, editor))
 {
     Q_D(OutlineWidget);
 
+    auto vbox = new QVBoxLayout(this);
+    auto hbox = new QFormLayout(this);
+    hbox->addRow(new QLabel(tr("Filter"),this), d->searchPattern);
+    hbox->addRow(new QLabel(tr("Header"),this), d->headerLevel);
+
+    vbox->addLayout(hbox);
+    vbox->addWidget(d->treeview,1);
+    setLayout(vbox);
+
     this->connect
     (
-        this,
-        &OutlineWidget::itemActivated,
-        [d](QListWidgetItem * item) {
-            d->onOutlineHeadingSelected(item);
+            d->treeview,
+            &QTreeView::activated,
+        [d](const QModelIndex& index) {
+            d->onOutlineHeadingSelected(index);
         }
     );
     this->connect
     (
-        this,
-        &OutlineWidget::itemClicked,
-        [d](QListWidgetItem * item) {
-            d->onOutlineHeadingSelected(item);
+        d->treeview,
+        &QTreeView::clicked,
+        [d](const QModelIndex& index) {
+            d->onOutlineHeadingSelected(index);
         }
     );
     this->connect
@@ -93,14 +150,49 @@ OutlineWidget::OutlineWidget(MarkdownEditor *editor, QWidget *parent)
         &OutlineWidget::updateCurrentNavigationHeading
     );
 
-    this->connect
-    (
-        editor->document(),
-        &MarkdownDocument::contentsChange,
-        [d](int, int, int) {
-            d->reloadOutline();
+    this->connect(
+        d->headerLevel,
+        &QSlider::valueChanged,
+        d->proxy,
+        &OutlineProxyModel::setLevel
+    );
+
+    this->connect(
+        d->proxy,
+        &OutlineProxyModel::levelChanged,
+        this,
+        [d, this](){
+            emit headerLevelChanged(d->headerLevel->value());
         }
     );
+
+    this->connect(
+        d->searchPattern,
+        &QLineEdit::textChanged,
+        d->proxy,
+        &OutlineProxyModel::setPattern
+    );
+
+    auto expandAll = [d](){
+        d->treeview->expandAll();
+    };
+
+    this->connect(d->proxy, &OutlineProxyModel::levelChanged, this, expandAll);
+    this->connect(d->proxy, &OutlineProxyModel::patternChanged, this, expandAll);
+
+    this->connect
+        (
+            editor->document(),
+            &MarkdownDocument::contentsChange,
+            [d](int pos, int charsRemoved, int charsAdded) {
+                auto doc = d->editor->document();
+                auto block = doc->findBlock(pos);
+                containsHeader(block);
+                //qDebug() << pos << charsRemoved << charsAdded << "blockfmt:"<< block.blockFormat().headingLevel() << block.charFormat() << block.text();
+                d->reloadOutline();
+            }
+            );
+
 }
 
 OutlineWidget::~OutlineWidget()
@@ -112,6 +204,8 @@ void OutlineWidget::updateCurrentNavigationHeading(int position)
 {
     Q_D(OutlineWidget);
 
+    qDebug() << "updateCurrentNavigationHeading" << position;
+
     // Make sure editor and document haven't been deleted.
     // Otherwise, application may crash on exit.
     //
@@ -119,7 +213,7 @@ void OutlineWidget::updateCurrentNavigationHeading(int position)
         return;
     }
 
-    if ((this->count() > 0) && (position >= 0)) {
+    /*if ((this->count() > 0) && (position >= 0)) {
         // Find out in which subsection of the document the cursor presently is
         // located.
         //
@@ -157,10 +251,10 @@ void OutlineWidget::updateCurrentNavigationHeading(int position)
             setCurrentItem(nullptr);
             this->scrollToTop();
         }
-    }
+    }*/
 }
 
-void OutlineWidgetPrivate::onOutlineHeadingSelected(QListWidgetItem *item)
+void OutlineWidgetPrivate::onOutlineHeadingSelected(const QModelIndex &idx)
 {
     Q_Q(OutlineWidget);
 
@@ -171,8 +265,19 @@ void OutlineWidgetPrivate::onOutlineHeadingSelected(QListWidgetItem *item)
         return;
     }
 
-    editor->navigateDocument(documentPosition(item));
-    emit q->headingNumberNavigated(q->row(item) + 1);
+    editor->navigateDocument(documentPosition(idx));
+    emit q->headingNumberNavigated(idx.row() + 1);
+}
+
+void OutlineWidget::setHeaderLevel(int lvl)
+{
+    Q_D(OutlineWidget);
+
+    if(d->headerLevel->value() == lvl)
+        return;
+
+    d->headerLevel->setValue(lvl);
+    emit headerLevelChanged(lvl);
 }
 
 void OutlineWidgetPrivate::reloadOutline()
@@ -186,7 +291,7 @@ void OutlineWidgetPrivate::reloadOutline()
         return;
     }
 
-    q->clear();
+    model->reset();
 
     if ((nullptr == editor) || (nullptr == editor->document())) {
         return;
@@ -200,6 +305,7 @@ void OutlineWidgetPrivate::reloadOutline()
 
     QVector<MarkdownNode *> headings = ast->headings();
 
+    QHash<int, QString> lastTextByLevel;
     for (MarkdownNode *heading : headings) {
         QString headingText("   ");
 
@@ -217,26 +323,38 @@ void OutlineWidgetPrivate::reloadOutline()
         }
 
         if (block.isValid()) {
-            QListWidgetItem *item = new QListWidgetItem();
-            item->setText(headingText);
-            item->setData(DOCUMENT_POSITION_ROLE, QVariant::fromValue(block.position()));
-            q->insertItem(q->count(), item);
+            //QListWidgetItem *item = new QListWidgetItem();
+            //item->setText(headingText);
+            //item->setData(DOCUMENT_POSITION_ROLE, QVariant::fromValue(block.position()));
+            //q->insertItem(q->count(), item);
+
+            QString previousText;
+            if(heading->headingLevel() > 0)
+            {
+                previousText = lastTextByLevel[heading->headingLevel()-1];
+            }
+
+            model->insertOutline(block.position(), previousText ,headingText);
+
+            lastTextByLevel[heading->headingLevel()] = headingText;
         }
     }
 
     q->updateCurrentNavigationHeading(editor->textCursor().position());
+    this->treeview->expandAll();
 }
 
-int OutlineWidgetPrivate::documentPosition(QListWidgetItem *item)
+int OutlineWidgetPrivate::documentPosition(const QModelIndex& item)
 {
-    return item->data(DOCUMENT_POSITION_ROLE).value<int>();
+    return item.data(OutlineModel::DocumentPositionRole).value<int>();
 }
 
 int OutlineWidgetPrivate::findHeading(int position, bool exactMatch)
 {
     Q_Q(OutlineWidget);
+    return -1;
 
-    int low = 0;
+   /* int low = 0;
     int high = q->count() - 1;
     int mid = 0;
 
@@ -269,6 +387,6 @@ int OutlineWidgetPrivate::findHeading(int position, bool exactMatch)
         return -1;
     } else {
         return mid;
-    }
+    }*/
 }
 } // namespace ghostwriter

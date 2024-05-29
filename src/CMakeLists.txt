@@ -68,6 +68,8 @@ target_sources(ghostwriter PRIVATE
     mainwindow.cpp
     messageboxhelper.cpp
     outlinewidget.cpp
+    outlinemodel.cpp
+    outlineproxymodel.cpp
     sidebar.cpp
     timelabel.cpp
     ${ghostwriter_QM_LOADER}
@@ -88,6 +90,7 @@ find_package(Qt${QT_MAJOR_VERSION} ${QT_MIN_VERSION} REQUIRED COMPONENTS
     WebChannel
     Gui
     WebEngineWidgets
+    Test
 )
 
 if (QT_MAJOR_VERSION STREQUAL "6")
@@ -126,6 +129,7 @@ target_link_libraries(ghostwriter PRIVATE
     Qt::WebChannel
     Qt::Gui
     Qt::WebEngineWidgets
+    Qt::Test
     KF${KF_MAJOR_VERSION}::SonnetCore
     KF${KF_MAJOR_VERSION}::SonnetUi
     KF${KF_MAJOR_VERSION}::CoreAddons

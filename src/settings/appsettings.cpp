@@ -58,6 +58,7 @@ constexpr auto GW_LAST_USED_EXPORTER_PARAMS_KEY{"Preview/lastUsedExporterParams"
 constexpr auto GW_PREVIEW_TEXT_FONT_KEY{"Preview/textFont"};
 constexpr auto GW_PREVIEW_CODE_FONT_KEY{"Preview/codeFont"};
 constexpr auto GW_BACKUP_LOCATION_KEY{"Backup/location"};
+constexpr auto GW_SIDEBAR_HEADER_LEVEL{"sidebar/outline/level"};
 }
 
 class AppSettingsPrivate
@@ -111,6 +112,7 @@ public:
     QString themeName;
     bool darkModeEnabled;
     bool showUnbreakableSpaceEnabled;
+    int headerLevel;
 };
 
 AppSettings *AppSettingsPrivate::instance = nullptr;
@@ -166,6 +168,7 @@ void AppSettings::store()
     appSettings.setValue(constants::GW_UNDERLINE_ITALICS_KEY, QVariant(d->useUnderlineForEmphasis));
     appSettings.setValue(constants::GW_UNBREAKABLE_SPACE, QVariant(d->showUnbreakableSpaceEnabled));
     appSettings.setValue(constants::GW_BACKUP_LOCATION_KEY, QVariant(d->backupLocation));
+    appSettings.setValue(constants::GW_SIDEBAR_HEADER_LEVEL, QVariant(d->headerLevel));
 
     appSettings.sync();
 }
@@ -678,6 +681,22 @@ void AppSettings::setShowUnbreakableSpaceEnabled(bool enabled)
     d->showUnbreakableSpaceEnabled = enabled;
     emit showUnbreakableSpaceEnabledChanged(d->showUnbreakableSpaceEnabled);
 }
+
+int AppSettings::headerLevel() const
+{
+    Q_D(const AppSettings);
+
+    return d->headerLevel;
+}
+
+void AppSettings::setHeaderLevel(int l)
+{
+    Q_D(AppSettings);
+
+    d->headerLevel = l;
+    emit headerLevelChanged(l);
+}
+
 AppSettings::AppSettings()
     : d_ptr(new AppSettingsPrivate())
 {
@@ -806,6 +825,8 @@ AppSettings::AppSettings()
     d->editorWidth = (EditorWidth)appSettings.value(constants::GW_EDITOR_WIDTH_KEY, QVariant(EditorWidthMedium)).toInt();
     d->interfaceStyle = (InterfaceStyle)appSettings.value(constants::GW_INTERFACE_STYLE_KEY, QVariant(InterfaceStyleRounded)).toInt();
     d->italicizeBlockquotes = appSettings.value(constants::GW_BLOCKQUOTE_STYLE_KEY, QVariant(false)).toBool();
+
+    d->headerLevel = appSettings.value(constants::GW_SIDEBAR_HEADER_LEVEL, QVariant(6)).toInt();
 
     if ((d->editorWidth < EditorWidthFirst) || (d->editorWidth > EditorWidthLast)) {
         d->editorWidth = EditorWidthMedium;
